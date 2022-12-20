@@ -1,0 +1,47 @@
+# Set time in milliseconds to wait before turning on miner.
+# Change the "5" to a value to set in minutes.
+
+# Example 1: 1 minute
+# IDLE_TIME=$((1*60*1000))
+
+# Example 2: 500 milliseconds
+# IDLE_TIME=$((500)) or IDLE_TIME=500
+
+IDLE_TIME=$((5*60*1000))
+
+
+# Get pid of miner software.
+# Change <MINER EXECUTABLE> to the name of your miner's binary.
+# Example: ethdcrminer64
+
+pid=$(pidof <MINER EXECUTABLE>)
+
+# Set this to the path to your script, or miner executable.
+# Example 1:
+# script="/home/user/mine.sh"
+# Example 2:
+# script="/home/user/ethdcrminer64"
+script="/path/to/script.sh"
+
+# Needs to be set for xprintidle to work correctly
+export DISPLAY=:0
+
+# Get time since last user interaction with computer
+idle=$(xprintidle)
+
+# Print current time (for logging purposes)
+t=$(date)
+printf "$t "
+
+if [ "$pid" -a "$idle" -lt "$IDLE_TIME" ]
+then
+        echo "Not idle anymore, and miner is running. Turning off mining.."
+        kill "$pid"
+
+elif [ ! "$pid" -a "$idle" -ge "$IDLE_TIME" ]
+then
+        echo "Miner not running, and user is idle. Turning on mining.."
+        sh "$script"
+else
+        echo "Do nothing"
+fi
